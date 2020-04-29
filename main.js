@@ -108,6 +108,7 @@ function startNotifications(characteristic) {
   return characteristic.startNotifications().
       then(() => {
         log('Notifications started');
+
         // Добавленная строка
         characteristic.addEventListener('characteristicvaluechanged',
             handleCharacteristicValueChanged);		
@@ -149,11 +150,9 @@ function disconnect() {
 
 // Получение данных
 function handleCharacteristicValueChanged(event) {
-//  let value = new TextDecoder().decode(event.target.value);
-//  log(value, 'in');
-  sttim = new Date().getTime();
-  log(sttim + event.target.value, 'in');
+  log(event.target.value.getUint32(0), 'in'); // (0, littleEndian)
 }
+
 // Отправить данные подключенному устройству
 function send(data) {
   //
