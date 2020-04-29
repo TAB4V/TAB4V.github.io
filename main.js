@@ -108,6 +108,9 @@ function startNotifications(characteristic) {
   return characteristic.startNotifications().
       then(() => {
         log('Notifications started');
+        // Добавленная строка
+        characteristic.addEventListener('characteristicvaluechanged',
+            handleCharacteristicValueChanged);		
       });
 }
 
@@ -134,10 +137,23 @@ function disconnect() {
     }
   }
 
-  characteristicCache = null;
+  // Добавленное условие
+  if (characteristicCache) {
+    characteristicCache.removeEventListener('characteristicvaluechanged',
+        handleCharacteristicValueChanged);
+    characteristicCache = null;
+  }
+  
   deviceCache = null;
 }
 
+// Получение данных
+function handleCharacteristicValueChanged(event) {
+//  let value = new TextDecoder().decode(event.target.value);
+//  log(value, 'in');
+  sttim = new Date().getTime();
+  log(sttim + event.target.value, 'in');
+}
 // Отправить данные подключенному устройству
 function send(data) {
   //
