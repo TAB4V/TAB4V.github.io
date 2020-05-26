@@ -71,7 +71,7 @@ function requestBluetoothDevice() {
 //	   {services: [0xAA81]}
 	   {namePrefix: 'TAB4V'}
 	  ],
-	  optionalServices: [0xAA80, 0xAA60]
+	  optionalServices: [0xAA80, 0xAA64]
   }).
       then(device => {
         log('"' + device.name + '" bluetooth device selected');
@@ -99,6 +99,8 @@ function handleDisconnection(event) {
 
 // Кэш объекта характеристики
 let characteristicCache = null;
+let ioCharacteristicCache = null;
+let serverInstance;
 
 // Подключение к определенному устройству, получение сервиса и характеристики
 function connectDeviceAndCacheCharacteristic(device) {
@@ -111,7 +113,7 @@ function connectDeviceAndCacheCharacteristic(device) {
   return device.gatt.connect().
       then(server => {
         log('GATT server connected, getting service...');
-
+		serverInstance = server ;
         return server.getPrimaryService(0xAA80);
       }).
       then(service => {
@@ -124,6 +126,19 @@ function connectDeviceAndCacheCharacteristic(device) {
         characteristicCache = characteristic;
 
         return characteristicCache;
+      })
+	   .then(_ => {
+        return serverInstance.getPrimaryService(0xAA64);
+		log('getting service...');
+		then(newService => {
+			log('Service found, getting characteristic...');
+			return newService.getCharacteristic(0xAA65);
+		})
+		.then(newCharacteristic => {
+			log('Characteristic found');
+			ioCharacteristicCache = newCharacteristic;
+//			return ioCharacteristicCache;
+		})
       });
 }
 
