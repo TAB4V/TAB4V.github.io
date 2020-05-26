@@ -4,6 +4,32 @@ let disconnectButton = document.getElementById('disconnect');
 let terminalContainer = document.getElementById('terminal');
 let sendForm = document.getElementById('send-form');
 let inputField = document.getElementById('input');
+let startButton = document.getElementById('startBtn');
+let stopButton = document.getElementById('stopBtn');
+let clearButton = document.getElementById('clrBtn');
+
+
+// при нажатии на кнопку START
+startButton.addEventListener('click', function() {
+  log('start');
+});
+
+// при нажатии на кнопку STOP
+stopButton.addEventListener('click', function() {
+  log('stop');
+});
+
+// при нажатии на кнопку CLEAR
+clearButton.addEventListener('click', function() {
+  log('clear');
+  terminalContainer.innerHTML = "";
+});
+
+
+// Записать значение в характеристику
+function writeToCharacteristic(characteristic, data) {
+  characteristic.writeValue(new TextEncoder().encode(data));
+}
 
 // Подключение к устройству при нажатии на кнопку Connect
 connectButton.addEventListener('click', function() {
@@ -19,7 +45,7 @@ disconnectButton.addEventListener('click', function() {
 sendForm.addEventListener('submit', function(event) {
   event.preventDefault(); // Предотвратить отправку формы
   send(inputField.value); // Отправить содержимое текстового поля
-  inputField.value = '';  // Обнулить текстовое поле
+//  inputField.value = '';  // Обнулить текстовое поле
   inputField.focus();     // Вернуть фокус на текстовое поле
 });
 
@@ -45,7 +71,7 @@ function requestBluetoothDevice() {
 //	   {services: [0xAA81]}
 	   {namePrefix: 'TAB4V'}
 	  ],
-	  optionalServices: [0xAA80]
+	  optionalServices: [0xAA80, 0xAA60]
   }).
       then(device => {
         log('"' + device.name + '" bluetooth device selected');
@@ -150,10 +176,18 @@ function disconnect() {
 
 // Получение данных
 function handleCharacteristicValueChanged(event) {
-  log(event.target.value.getUint32(0), 'in'); // (0, littleEndian)
+  log(event.target.value.getUint32(0)/100, 'in'); // (0, littleEndian)
 }
 
 // Отправить данные подключенному устройству
 function send(data) {
-  //
+  data = String(data);
+
+  if (!data || !characteristicCache) {
+	log('err');
+    return;
+  }
+
+  writeToCharacteristic(characteristicCache, data);
+  log(data, 'out');
 }
