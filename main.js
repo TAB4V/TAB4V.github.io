@@ -171,15 +171,9 @@ function showValues(device) {
                 value: _val,
                 data: _dat
               };
-              console.log([uuid, _val, chars[i], value]);
             });
         });
     }
-  } else {
-    Promise.resolve(charArray)
-      .then(_ => {
-        console.log(charArray);
-      });
   }
 }
 
@@ -276,7 +270,7 @@ function handleCharacteristicValueChanged(event) {
   log(event.target.value.getUint32(0)/100, 'in'); // (0, littleEndian)
 }
 
-function int16ToByteArray(value) {
+function int16ToInt8Array(value) {
     // we want to represent the input as a 8-bytes array
     var byteArray = [(value >> 8) & 0xFF, value & 0xFF];
 
@@ -286,7 +280,7 @@ function int16ToByteArray(value) {
       // value = (value - byte) / 256;
     // }
 
-    return new Int16Array(byteArray);
+    return new Int8Array(byteArray);
 };
 
 // Отправить данные подключенному устройству
@@ -294,8 +288,7 @@ function send() {
   var uuid = $('#input').attr('data-uuid');
   var value = $('#input').val();
   var characteristic = charArray[uuid].characteristic;
-  var converted = int16ToByteArray(value);
-  console.log([characteristic, uuid, value, converted]);
+  var converted = int16ToInt8Array(value);
   characteristic.writeValue(converted);
 }
 /*
