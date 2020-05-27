@@ -101,9 +101,9 @@ function handleDisconnection(event) {
 
   log('"' + device.name + '" bluetooth device disconnected, trying to reconnect...');
 
-  connectDeviceAndCacheCharacteristic(device)
-    .then(characteristic => startNotifications(characteristic))
-    .catch(error => log(error));
+//  connectDeviceAndCacheCharacteristic(device)
+//    .then(characteristic => startNotifications(characteristic))
+//    .catch(error => log(error));
 }
 
 // Кэш объекта характеристики
