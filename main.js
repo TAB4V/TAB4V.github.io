@@ -133,9 +133,9 @@ function showValues(device) {
           }
           charArray[uuid] = {
             characteristic: characteristic,
-            value: value.getUint8(0)
+            value: value
           };
-          console.log([uuid, value.getUint8(0)]);
+          console.log([uuid, value]);
         });
     }
   } else {
