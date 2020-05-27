@@ -276,7 +276,9 @@ function send() {
   var uuid = $('#input').attr('data-uuid');
   var value = $('#input').val();
   var characteristic = charArray[uuid].characteristic;
-  console.log([characteristic, uuid, value, int16ToByteArray(value)]);
+  var converted = int16ToByteArray(value);
+  console.log([characteristic, uuid, value, converted]);
+  characteristic.writeValue(converted);
 }
 /*
 function send(data) {
