@@ -99,15 +99,15 @@ function handleDisconnection(event) {
 let characteristicCache = null;
 let charArray = null;
 let ioCharacteristicCache = null;
-let serverInstance = null;
+let serviceInstance = null;
 
 function getPrimaryService(device) {
-  return serverInstance
-    ? Promise.resolve(serverInstance)
+  return serviceInstance
+    ? Promise.resolve(serviceInstance)
     : device.gatt.connect()
       .then(server => {
         log('GATT server connected, getting service...');
-        serverInstance = server ;
+        serviceInstance = server ;
         return server.getPrimaryService(0xAA80);
       });
 }
@@ -157,7 +157,7 @@ function connectDeviceAndCacheCharacteristic(device) {
   // return device.gatt.connect()
   //   .then(server => {
   //     log('GATT server connected, getting service...');
-  //     serverInstance = server ;
+  //     serviceInstance = server ;
   //     return server.getPrimaryService(0xAA80);
   //   })
   return getPrimaryService(device)
@@ -173,7 +173,7 @@ function connectDeviceAndCacheCharacteristic(device) {
       return characteristicCache;
     });
 // 	   .then(_ => {
-//         return serverInstance.getPrimaryService(0xAA64);
+//         return serviceInstance.getPrimaryService(0xAA64);
 // 		log('getting service...');
 // 		then(newService => {
 // 			log('Service found, getting characteristic...');
