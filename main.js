@@ -54,11 +54,12 @@ let deviceCache = null;
 
 // Запустить выбор Bluetooth устройства и подключиться к выбранному
 function connect() {
-  return (deviceCache ? Promise.resolve(deviceCache) :
-      requestBluetoothDevice()).
-      then(device => connectDeviceAndCacheCharacteristic(device)).
-      then(characteristic => startNotifications(characteristic)).
-      catch(error => log(error));
+  var _dev = (deviceCache ? Promise.resolve(deviceCache) : requestBluetoothDevice());
+  _dev.then(device => showValues(device));
+  return _dev
+    .then(device => connectDeviceAndCacheCharacteristic(device))
+    .then(characteristic => startNotifications(characteristic))
+    .catch(error => log(error));
 }
 
 // Запрос выбора Bluetooth устройства
@@ -66,41 +67,77 @@ function requestBluetoothDevice() {
   log('Requesting bluetooth device...');
 
   return navigator.bluetooth.requestDevice({
-//	  acceptAllDevices: true,
-      filters: [
-//	   {services: [0xAA81]}
+	  // acceptAllDevices: true,
+    filters: [
+	   // {services: [0xAA81]}
 	   {namePrefix: 'TAB4V'}
 	  ],
 	  optionalServices: [0xAA80, 0xAA64]
-  }).
-      then(device => {
-        log('"' + device.name + '" bluetooth device selected');
-        deviceCache = device;
+  }).then(device => {
+      log('"' + device.name + '" bluetooth device selected');
+      deviceCache = device;
 
-        // Добавленная строка
-        deviceCache.addEventListener('gattserverdisconnected',
-            handleDisconnection);
+      // Добавленная строка
+      deviceCache.addEventListener('gattserverdisconnected', handleDisconnection);
 
-        return deviceCache;
-      });
+      return deviceCache;
+    });
 }
 
 // Обработчик разъединения
 function handleDisconnection(event) {
   let device = event.target;
 
-  log('"' + device.name +
-      '" bluetooth device disconnected, trying to reconnect...');
+  log('"' + device.name + '" bluetooth device disconnected, trying to reconnect...');
 
-  connectDeviceAndCacheCharacteristic(device).
-      then(characteristic => startNotifications(characteristic)).
-      catch(error => log(error));
+  connectDeviceAndCacheCharacteristic(device)
+    .then(characteristic => startNotifications(characteristic))
+    .catch(error => log(error));
 }
 
 // Кэш объекта характеристики
 let characteristicCache = null;
+let charArray = null;
 let ioCharacteristicCache = null;
-let serverInstance;
+let serverInstance = null;
+
+function getPrimaryService(device) {
+  return serverInstance
+    ? Promise.resolve(serverInstance)
+    : device.gatt.connect()
+      .then(server => {
+        log('GATT server connected, getting service...');
+        serverInstance = server ;
+        return server.getPrimaryService(0xAA80);
+      });
+}
+
+function readCharacteristic(device, param) {
+  return getPrimaryService(device)
+    .then(service => {
+      return service.getCharacteristic(param);
+    })
+    .then(characteristic => {
+      return [characteristic.uuid, characteristic.readValue()];
+    });
+}
+
+function showValues(device) {
+  var chars = [0xAA81, 0xAA82, 0xAA83];
+  if (!charArray) {
+    for (var i in chars) {
+      readCharacteristic(device, chars[i])
+        .then((uuid, value) => {
+          charArray[uuid] = value;
+          console.log([uuid, value]);
+        });
+    }
+  }
+  Promise.resolve(charArray)
+    .then(_ => {
+      console.log(charArray);
+    });
+}
 
 // Подключение к определенному устройству, получение сервиса и характеристики
 function connectDeviceAndCacheCharacteristic(device) {
@@ -110,12 +147,13 @@ function connectDeviceAndCacheCharacteristic(device) {
 
   log('Connecting to GATT server...');
 
-  return device.gatt.connect()
-    .then(server => {
-      log('GATT server connected, getting service...');
-      serverInstance = server ;
-      return server.getPrimaryService(0xAA80);
-    })
+  // return device.gatt.connect()
+  //   .then(server => {
+  //     log('GATT server connected, getting service...');
+  //     serverInstance = server ;
+  //     return server.getPrimaryService(0xAA80);
+  //   })
+  return getPrimaryService(device)
     .then(service => {
       log('Service found, getting characteristic...');
 
@@ -124,7 +162,7 @@ function connectDeviceAndCacheCharacteristic(device) {
     .then(characteristic => {
       log('Characteristic found');
       characteristicCache = characteristic;
-      console.log(characteristic);
+      console.log([characteristic.uuid, characteristic.readValue(), characteristic]);
 
       return characteristicCache;
     });
@@ -182,8 +220,7 @@ function disconnect() {
 
   // Добавленное условие
   if (characteristicCache) {
-    characteristicCache.removeEventListener('characteristicvaluechanged',
-        handleCharacteristicValueChanged);
+    characteristicCache.removeEventListener('characteristicvaluechanged', handleCharacteristicValueChanged);
     characteristicCache = null;
   }
   
@@ -200,7 +237,7 @@ function send(data) {
   data = String(data);
 
   if (!data || !characteristicCache) {
-	log('err');
+	  log('err');
     return;
   }
 
