@@ -118,7 +118,7 @@ function readCharacteristic(device, param) {
       return service.getCharacteristic(param);
     })
     .then(characteristic => {
-      return [characteristic.uuid, characteristic, characteristic.readValue()];
+      return characteristic;
     });
 }
 
@@ -127,11 +127,12 @@ function showValues(device) {
   if (!charArray) {
     for (var i in chars) {
       readCharacteristic(device, chars[i])
-        .then((uuid, characteristic, value) => {
+        .then(characteristic => {
           if (!charArray) {
             charArray = {};
           }
-          charArray[uuid] = {
+          var value = characteristic.readValue();
+          charArray[characteristic.uuid] = {
             characteristic: characteristic,
             value: value
           };
