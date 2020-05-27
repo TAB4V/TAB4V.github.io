@@ -132,15 +132,15 @@ function showValues(device) {
           Promise.resolve(characteristic.readValue())
             .then(value => {
               var _val;
-              switch(chars[i]) {
-                case 0xAA81:
+              switch(uuid) {
+                case '0000aa81-0000-1000-8000-00805f9b34fb':
                   _val = value.getUint32(0);
                   break;
-                case 0xAA82:
+                case '0000aa82-0000-1000-8000-00805f9b34fb':
                   _val = value.getInt16(0);
                   $('#input').val(_val);
                   break;
-                case 0xAA83:
+                case '0000aa83-0000-1000-8000-00805f9b34fb':
                   _val = value.getUint8(0);
                   break;
               }
