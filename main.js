@@ -138,20 +138,17 @@ function showValues(device) {
                   break;
                 case 0xAA82:
                   _val = value.getInt16(0);
-                  console.log([value, _val]);
                   $('#input').val(_val);
                   break;
                 case 0xAA83:
                   _val = value.getUint8(0);
                   break;
-                default:
-                  console.log(chars[i]);
               }
               charArray[uuid] = {
                 characteristic: characteristic,
                 value: _val
               };
-              console.log([uuid, _val]);
+              console.log([uuid, _val, chars[i], value]);
             });
         });
     }
