@@ -274,7 +274,7 @@ function int16ToByteArray(value) {
 // Отправить данные подключенному устройству
 function send() {
   var uuid = $('#input').attr('data-uuid');
-  var value = $('#input').attr('data-uuid');
+  var value = $('#input').val();
   var characteristic = charArray[uuid].characteristic;
   console.log([characteristic, uuid, value, int16ToByteArray(value)]);
 }
