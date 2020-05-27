@@ -73,7 +73,7 @@ function connect() {
   _dev.then(device => showValues(device));
   return _dev
     .then(device => connectDeviceAndCacheCharacteristic(device))
-//    .then(characteristic => startNotifications(characteristic))
+    .then(characteristic => startNotifications(characteristic))
     .catch(error => log(error));
 }
 
@@ -222,35 +222,32 @@ function connectDeviceAndCacheCharacteristic(device) {
 function startNotifications(characteristic) {
   log('Starting notifications...');
 
-  return characteristic.startNotifications().
-      then(() => {
-        log('Notifications started');
+  return characteristic.startNotifications()
+    .then(() => {
+      log('Notifications started');
 
-        // Добавленная строка
-        characteristic.addEventListener('characteristicvaluechanged', handleCharacteristicValueChanged);		
-      });
+      // Добавленная строка
+      characteristic.addEventListener('characteristicvaluechanged', handleCharacteristicValueChanged);		
+    });
 }
 
 // Вывод в терминал
 function log(data, type = '') {
-  terminalContainer.insertAdjacentHTML('beforeend',
-      '<div' + (type ? ' class="' + type + '"' : '') + '>' + data + '</div>');
+  terminalContainer.insertAdjacentHTML('beforeend', '<div' + (type ? ' class="' + type + '"' : '') + '>' + data + '</div>');
 }
 
 // Отключиться от подключенного устройства
 function disconnect() {
   if (deviceCache) {
     log('Disconnecting from "' + deviceCache.name + '" bluetooth device...');
-    deviceCache.removeEventListener('gattserverdisconnected',
-        handleDisconnection);
+    deviceCache.removeEventListener('gattserverdisconnected', handleDisconnection);
 
     if (deviceCache.gatt.connected) {
       deviceCache.gatt.disconnect();
       log('"' + deviceCache.name + '" bluetooth device disconnected');
     }
     else {
-      log('"' + deviceCache.name +
-          '" bluetooth device is already disconnected');
+      log('"' + deviceCache.name + '" bluetooth device is already disconnected');
     }
   }
 
@@ -271,16 +268,10 @@ function handleCharacteristicValueChanged(event) {
 }
 
 function int16ToInt8Array(value) {
-    // we want to represent the input as a 8-bytes array
-    var byteArray = [(value >> 8) & 0xFF, value & 0xFF];
+  // we want to represent the input as a 8-bytes array
+  var byteArray = [(value >> 8) & 0xFF, value & 0xFF];
 
-    // for (var index = 0; index < byteArray.length; index++) {
-      // var byte = value & 0xff;
-      // byteArray[index] = byte;
-      // value = (value - byte) / 256;
-    // }
-
-    return new Int8Array(byteArray);
+  return new Int8Array(byteArray);
 };
 
 // Отправить данные подключенному устройству
