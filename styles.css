@@ -1,3 +1,9 @@
+button {
+  padding: .49rem 1rem;
+}
+input {
+  padding: .49rem 0;
+}
 #terminal div {
     color: gray;
 }
