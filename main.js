@@ -12,21 +12,25 @@ let clearButton = document.getElementById('clrBtn');
 // при нажатии на кнопку START
 startButton.addEventListener('click', function() {
   log('start');
+/*
   var uuid = $('#startBtn').attr('data-uuid');
   var value = $('#startBtn').attr('data-value');
   var characteristic = charArray[uuid].characteristic;
   var converted = new Uint8Array([value]);
   characteristic.writeValue(converted);
+*/
 });
 
 // при нажатии на кнопку STOP
 stopButton.addEventListener('click', function() {
   log('stop');
+/*
   var uuid = $('#stopBtn').attr('data-uuid');
   var value = $('#stopBtn').attr('data-value');
   var characteristic = charArray[uuid].characteristic;
   var converted = new Uint8Array([value]);
   characteristic.writeValue(converted);
+*/
 });
 
 // при нажатии на кнопку CLEAR
@@ -143,35 +147,30 @@ function showValues(device) {
           Promise.resolve(characteristic.readValue())
             .then(value => {
               var _val;
-              var _dat;
               switch(uuid) {
                 case '0000aa81-0000-1000-8000-00805f9b34fb':
                   _val = value.getUint32(0);
-                  _dat = 'uint32';
                   break;
                 case '0000aa82-0000-1000-8000-00805f9b34fb':
                   _val = value.getInt16(0);
-                  _dat = 'int16';
-                  $('#input').attr('data-uuid', uuid);
-                  $('#input').val(_val);
+                  // $('#input').attr('data-uuid', uuid);
+                  // $('#input').val(_val);
                   break;
                 case '0000aa83-0000-1000-8000-00805f9b34fb':
                   _val = value.getUint8(0);
-                  $('#startBtn')
-                    .attr('data-uuid', uuid)
-                    .attr('data-value', 3);
-                  $('#stopBtn')
-                    .attr('data-uuid', uuid)
-                    .attr('data-value', 5);
-                  _dat = 'uint8';
+                  // $('#startBtn')
+                  //   .attr('data-uuid', uuid)
+                  //   .attr('data-value', 3);
+                  // $('#stopBtn')
+                  //   .attr('data-uuid', uuid)
+                  //   .attr('data-value', 5);
                   break;
               }
               charArray[uuid] = {
                 characteristic: characteristic,
-                value: _val,
-                data: _dat
+                value: _val
               };
-			  log(uuid + ': ' + _val);
+              log(uuid + ': ' + _val);
             });
         });
     }
@@ -286,11 +285,14 @@ function int16ToInt8Array(value) {
 
 // Отправить данные подключенному устройству
 function send() {
+  log('Send disabled temporary');
+/*
   var uuid = $('#input').attr('data-uuid');
   var value = $('#input').val();
   var characteristic = charArray[uuid].characteristic;
   var converted = int16ToInt8Array(value);
   characteristic.writeValue(converted);
+*/
 }
 /*
 function send(data) {
