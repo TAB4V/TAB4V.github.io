@@ -171,6 +171,7 @@ function showValues(device) {
                 value: _val,
                 data: _dat
               };
+			  log(uuid + ': ' + _val);
             });
         });
     }
