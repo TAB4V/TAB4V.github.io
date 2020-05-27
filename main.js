@@ -131,11 +131,24 @@ function showValues(device) {
           var uuid = characteristic.uuid;
           Promise.resolve(characteristic.readValue())
             .then(value => {
+              var _val;
+              switch(chars[i]) {
+                case 0xAA81:
+                  _val = value.getUint32(0);
+                  break;
+                case 0xAA82:
+                  _val = value.getInt16(0);
+                  inputField.value = _val;
+                  break;
+                case 0xAA83:
+                  _val = value.getUint8(0);
+                  break;
+              }
               charArray[uuid] = {
                 characteristic: characteristic,
-                value: value
+                value: _val
               };
-              console.log([uuid, value]);
+              console.log([uuid, _val]);
             });
         });
     }
@@ -197,8 +210,7 @@ function startNotifications(characteristic) {
         log('Notifications started');
 
         // Добавленная строка
-        characteristic.addEventListener('characteristicvaluechanged',
-            handleCharacteristicValueChanged);		
+        characteristic.addEventListener('characteristicvaluechanged', handleCharacteristicValueChanged);		
       });
 }
 
