@@ -126,20 +126,20 @@ function connectDeviceAndCacheCharacteristic(device) {
         characteristicCache = characteristic;
 
         return characteristicCache;
-      })
-	   .then(_ => {
-        return serverInstance.getPrimaryService(0xAA64);
-		log('getting service...');
-		then(newService => {
-			log('Service found, getting characteristic...');
-			return newService.getCharacteristic(0xAA65);
-		})
-		.then(newCharacteristic => {
-			log('Characteristic found');
-			ioCharacteristicCache = newCharacteristic;
-//			return ioCharacteristicCache;
-		})
       });
+// 	   .then(_ => {
+//         return serverInstance.getPrimaryService(0xAA64);
+// 		log('getting service...');
+// 		then(newService => {
+// 			log('Service found, getting characteristic...');
+// 			return newService.getCharacteristic(0xAA65);
+// 		})
+// 		.then(newCharacteristic => {
+// 			log('Characteristic found');
+// 			ioCharacteristicCache = newCharacteristic;
+// //			return ioCharacteristicCache;
+// 		})
+//       });
 }
 
 // Включение получения уведомлений об изменении характеристики
