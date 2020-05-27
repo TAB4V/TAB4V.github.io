@@ -138,7 +138,7 @@ function showValues(device) {
                   break;
                 case 0xAA82:
                   _val = value.getInt16(0);
-                  inputField.value = _val;
+                  $('#input').val(_val);
                   break;
                 case 0xAA83:
                   _val = value.getUint8(0);
