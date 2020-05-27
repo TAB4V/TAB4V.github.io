@@ -144,6 +144,8 @@ function showValues(device) {
                 case 0xAA83:
                   _val = value.getUint8(0);
                   break;
+                default:
+                  console.log(chars[i]);
               }
               charArray[uuid] = {
                 characteristic: characteristic,
