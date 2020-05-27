@@ -109,7 +109,7 @@ function handleDisconnection(event) {
 // Кэш объекта характеристики
 let characteristicCache = null;
 let charArray = null;
-let ioCharacteristicCache = null;
+// let ioCharacteristicCache = null;
 let serviceInstance = null;
 
 function getPrimaryService(device) {
@@ -265,7 +265,9 @@ function disconnect() {
     characteristicCache.removeEventListener('characteristicvaluechanged', handleCharacteristicValueChanged);
     characteristicCache = null;
   }
-  
+
+  charArray = null;
+  serviceInstance = null;
   deviceCache = null;
 }
 
