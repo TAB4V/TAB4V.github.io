@@ -44,7 +44,8 @@ disconnectButton.addEventListener('click', function() {
 // Обработка события отправки формы
 sendForm.addEventListener('submit', function(event) {
   event.preventDefault(); // Предотвратить отправку формы
-  send(inputField.value); // Отправить содержимое текстового поля
+  send();
+  // send(inputField.value); // Отправить содержимое текстового поля
 //  inputField.value = '';  // Обнулить текстовое поле
   inputField.focus();     // Вернуть фокус на текстовое поле
 });
@@ -132,21 +133,27 @@ function showValues(device) {
           Promise.resolve(characteristic.readValue())
             .then(value => {
               var _val;
+              var _dat;
               switch(uuid) {
                 case '0000aa81-0000-1000-8000-00805f9b34fb':
                   _val = value.getUint32(0);
+                  _dat = 'uint32';
                   break;
                 case '0000aa82-0000-1000-8000-00805f9b34fb':
                   _val = value.getInt16(0);
+                  _dat = 'int16';
+                  $('#input').attr('data-uuid', uuid);
                   $('#input').val(_val);
                   break;
                 case '0000aa83-0000-1000-8000-00805f9b34fb':
                   _val = value.getUint8(0);
+                  _dat = 'uint8';
                   break;
               }
               charArray[uuid] = {
                 characteristic: characteristic,
-                value: _val
+                value: _val,
+                data: _dat
               };
               console.log([uuid, _val, chars[i], value]);
             });
@@ -251,7 +258,27 @@ function handleCharacteristicValueChanged(event) {
   log(event.target.value.getUint32(0)/100, 'in'); // (0, littleEndian)
 }
 
+function int16ToByteArray(value) {
+    // we want to represent the input as a 8-bytes array
+    var byteArray = [(value >> 8) & 0xFF, value & 0xFF];
+
+    // for (var index = 0; index < byteArray.length; index++) {
+      // var byte = value & 0xff;
+      // byteArray[index] = byte;
+      // value = (value - byte) / 256;
+    // }
+
+    return byteArray;
+};
+
 // Отправить данные подключенному устройству
+function send() {
+  var uuid = $('#input').attr('data-uuid');
+  var value = $('#input').attr('data-uuid');
+  var characteristic = charArray[uuid].characteristic;
+  console.log([characteristic, uuid, value, int16ToByteArray(value)]);
+}
+/*
 function send(data) {
   data = String(data);
 
@@ -263,3 +290,4 @@ function send(data) {
   writeToCharacteristic(characteristicCache, data);
   log(data, 'out');
 }
+*/
