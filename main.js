@@ -69,7 +69,7 @@ function connect() {
   _dev.then(device => showValues(device));
   return _dev
     .then(device => connectDeviceAndCacheCharacteristic(device))
-    .then(characteristic => startNotifications(characteristic))
+//    .then(characteristic => startNotifications(characteristic))
     .catch(error => log(error));
 }
 
@@ -101,9 +101,9 @@ function handleDisconnection(event) {
 
   log('"' + device.name + '" bluetooth device disconnected, trying to reconnect...');
 
-//  connectDeviceAndCacheCharacteristic(device)
-//    .then(characteristic => startNotifications(characteristic))
-//    .catch(error => log(error));
+  connectDeviceAndCacheCharacteristic(device)
+    .then(characteristic => startNotifications(characteristic))
+    .catch(error => log(error));
 }
 
 // Кэш объекта характеристики
