@@ -128,12 +128,15 @@ function showValues(device) {
           if (!charArray) {
             charArray = {};
           }
-          var value = characteristic.readValue();
-          charArray[characteristic.uuid] = {
-            characteristic: characteristic,
-            value: value
-          };
-          console.log([uuid, value]);
+          var uuid = characteristic.uuid;
+          Promise.resolve(characteristic.readValue())
+            .then(value => {
+              charArray[uuid] = {
+                characteristic: characteristic,
+                value: value
+              };
+              console.log([uuid, value]);
+            });
         });
     }
   } else {
