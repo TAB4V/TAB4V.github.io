@@ -116,9 +116,6 @@ function readCharacteristic(device, param) {
   return getPrimaryService(device)
     .then(service => {
       return service.getCharacteristic(param);
-    })
-    .then(characteristic => {
-      return characteristic;
     });
 }
 
