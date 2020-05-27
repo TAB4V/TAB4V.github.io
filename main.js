@@ -268,7 +268,7 @@ function int16ToByteArray(value) {
       // value = (value - byte) / 256;
     // }
 
-    return byteArray;
+    return new Int16Array(byteArray);
 };
 
 // Отправить данные подключенному устройству
