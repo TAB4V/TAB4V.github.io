@@ -12,11 +12,21 @@ let clearButton = document.getElementById('clrBtn');
 // при нажатии на кнопку START
 startButton.addEventListener('click', function() {
   log('start');
+  var uuid = $('#startBtn').attr('data-uuid');
+  var value = $('#startBtn').attr('data-value');
+  var characteristic = charArray[uuid].characteristic;
+  var converted = new Uint8Array([value]);
+  characteristic.writeValue(converted);
 });
 
 // при нажатии на кнопку STOP
 stopButton.addEventListener('click', function() {
   log('stop');
+  var uuid = $('#stopBtn').attr('data-uuid');
+  var value = $('#stopBtn').attr('data-value');
+  var characteristic = charArray[uuid].characteristic;
+  var converted = new Uint8Array([value]);
+  characteristic.writeValue(converted);
 });
 
 // при нажатии на кнопку CLEAR
@@ -147,6 +157,12 @@ function showValues(device) {
                   break;
                 case '0000aa83-0000-1000-8000-00805f9b34fb':
                   _val = value.getUint8(0);
+                  $('#startBtn')
+                    .attr('data-uuid', uuid)
+                    .attr('data-value', 3);
+                  $('#stopBtn')
+                    .attr('data-uuid', uuid)
+                    .attr('data-value', 5);
                   _dat = 'uint8';
                   break;
               }
