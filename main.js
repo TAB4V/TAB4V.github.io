@@ -79,8 +79,7 @@ function requestBluetoothDevice() {
         deviceCache = device;
 
         // Добавленная строка
-        deviceCache.addEventListener('gattserverdisconnected',
-            handleDisconnection);
+        deviceCache.addEventListener('gattserverdisconnected', handleDisconnection);
 
         return deviceCache;
       });
@@ -100,7 +99,7 @@ function handleDisconnection(event) {
 // Кэш объекта характеристики
 let characteristicCache = null;
 let ioCharacteristicCache = null;
-let serverInstance;
+let serverInstance = null;
 
 // Подключение к определенному устройству, получение сервиса и характеристики
 function connectDeviceAndCacheCharacteristic(device) {
@@ -111,26 +110,14 @@ function connectDeviceAndCacheCharacteristic(device) {
   log('Connecting to GATT server...');
   console.log('Connecting to GATT server...');
 
-  return device.gatt.connect()
-    .then(server => {
-      log('GATT server connected, getting service...');
-      console.log(['GATT server connected, getting service...', server]);
-      serverInstance = server ;
-      return server.getPrimaryService(0xAA80);
-    }).
-    then(service => {
-      log('Service found, getting characteristic...');
-      console.log(['Service found, getting characteristic...', service]);
-
-      return service.getCharacteristic(0xAA81);
-    }).
-    then(characteristic => {
-      log('Characteristic found');
-      console.log(['Characteristic found', characteristic]);
-      characteristicCache = characteristic;
-
-      return characteristicCache;
-    });
+  var config = {
+    service: 0xAA80,
+    characteristics: [0xAA81, 0xAA82, 0xAA83]
+  };
+  for (var i in config.characteristics) {
+    return getChracteristics(config.service, config.characteristics[i]);
+  }
+  
 // 	   .then(_ => {
 //         return serverInstance.getPrimaryService(0xAA64);
 // 		log('getting service...');
@@ -144,6 +131,33 @@ function connectDeviceAndCacheCharacteristic(device) {
 // //			return ioCharacteristicCache;
 // 		})
 //       });
+}
+
+function getServiceInstance(service) {
+  return deviceCache.gatt.connect()
+    .then(server => {
+      log('GATT server connected, getting service...');
+      console.log(['GATT server connected, getting service...', server]);
+      serverInstance = server.getPrimaryService(service);
+      return serviceInstance;
+    });
+}
+
+function getChracteristics(service, characteristic) {
+  return (serverInstance ? Promise.resolve(serverInstance) : getServiceInstance(service))
+    .then(service => {
+      log('Service found, getting characteristic...');
+      console.log(['Service found, getting characteristic...', service]);
+
+      return service.getCharacteristic(characteristic);
+    })
+    .then(characteristic => {
+      log('Characteristic found');
+      console.log(['Characteristic found', characteristic]);
+      characteristicCache = characteristic;
+
+      return characteristicCache;
+    });
 }
 
 // Включение получения уведомлений об изменении характеристики
