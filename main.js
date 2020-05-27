@@ -11,26 +11,22 @@ let clearButton = document.getElementById('clrBtn');
 
 // при нажатии на кнопку START
 startButton.addEventListener('click', function() {
-  log('start');
-/*
   var uuid = $('#startBtn').attr('data-uuid');
   var value = $('#startBtn').attr('data-value');
   var characteristic = charArray[uuid].characteristic;
   var converted = new Uint8Array([value]);
   characteristic.writeValue(converted);
-*/
+  log('Started');
 });
 
 // при нажатии на кнопку STOP
 stopButton.addEventListener('click', function() {
-  log('stop');
-/*
   var uuid = $('#stopBtn').attr('data-uuid');
   var value = $('#stopBtn').attr('data-value');
   var characteristic = charArray[uuid].characteristic;
   var converted = new Uint8Array([value]);
   characteristic.writeValue(converted);
-*/
+  log('Stoped');
 });
 
 // при нажатии на кнопку CLEAR
@@ -60,7 +56,7 @@ sendForm.addEventListener('submit', function(event) {
   event.preventDefault(); // Предотвратить отправку формы
   send();
   // send(inputField.value); // Отправить содержимое текстового поля
-//  inputField.value = '';  // Обнулить текстовое поле
+  // inputField.value = '';  // Обнулить текстовое поле
   inputField.focus();     // Вернуть фокус на текстовое поле
 });
 
@@ -153,17 +149,17 @@ function showValues(device) {
                   break;
                 case '0000aa82-0000-1000-8000-00805f9b34fb':
                   _val = value.getInt16(0);
-                  // $('#input').attr('data-uuid', uuid);
-                  // $('#input').val(_val);
+                  $('#input').attr('data-uuid', uuid);
+                  $('#input').val(_val);
                   break;
                 case '0000aa83-0000-1000-8000-00805f9b34fb':
                   _val = value.getUint8(0);
-                  // $('#startBtn')
-                  //   .attr('data-uuid', uuid)
-                  //   .attr('data-value', 3);
-                  // $('#stopBtn')
-                  //   .attr('data-uuid', uuid)
-                  //   .attr('data-value', 5);
+                  $('#startBtn')
+                    .attr('data-uuid', uuid)
+                    .attr('data-value', 3);
+                  $('#stopBtn')
+                    .attr('data-uuid', uuid)
+                    .attr('data-value', 5);
                   break;
               }
               charArray[uuid] = {
@@ -276,14 +272,12 @@ function int16ToInt8Array(value) {
 
 // Отправить данные подключенному устройству
 function send() {
-  log('Send disabled temporary');
-/*
   var uuid = $('#input').attr('data-uuid');
   var value = $('#input').val();
   var characteristic = charArray[uuid].characteristic;
   var converted = int16ToInt8Array(value);
   characteristic.writeValue(converted);
-*/
+  log('Set ' + uuid + ' value ' + value);
 }
 /*
 function send(data) {
