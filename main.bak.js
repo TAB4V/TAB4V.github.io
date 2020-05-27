@@ -54,11 +54,12 @@ let deviceCache = null;
 
 // Запустить выбор Bluetooth устройства и подключиться к выбранному
 function connect() {
-  return (deviceCache ? Promise.resolve(deviceCache) :
-      requestBluetoothDevice()).
-      then(device => connectDeviceAndCacheCharacteristic(device)).
-      then(characteristic => startNotifications(characteristic)).
-      catch(error => log(error));
+  return (deviceCache
+      ? Promise.resolve(deviceCache)
+      : requestBluetoothDevice())
+          .then(device => connectDeviceAndCacheCharacteristic(device))
+          .then(characteristic => startNotifications(characteristic))
+          .catch(error => log(error));
 }
 
 // Запрос выбора Bluetooth устройства
@@ -78,8 +79,7 @@ function requestBluetoothDevice() {
         deviceCache = device;
 
         // Добавленная строка
-        deviceCache.addEventListener('gattserverdisconnected',
-            handleDisconnection);
+        deviceCache.addEventListener('gattserverdisconnected', handleDisconnection);
 
         return deviceCache;
       });
@@ -89,8 +89,7 @@ function requestBluetoothDevice() {
 function handleDisconnection(event) {
   let device = event.target;
 
-  log('"' + device.name +
-      '" bluetooth device disconnected, trying to reconnect...');
+  log('"' + device.name + '" bluetooth device disconnected, trying to reconnect...');
 
   connectDeviceAndCacheCharacteristic(device).
       then(characteristic => startNotifications(characteristic)).
@@ -100,7 +99,7 @@ function handleDisconnection(event) {
 // Кэш объекта характеристики
 let characteristicCache = null;
 let ioCharacteristicCache = null;
-let serverInstance;
+let serverInstance = null;
 
 // Подключение к определенному устройству, получение сервиса и характеристики
 function connectDeviceAndCacheCharacteristic(device) {
@@ -109,24 +108,16 @@ function connectDeviceAndCacheCharacteristic(device) {
   }
 
   log('Connecting to GATT server...');
+  console.log('Connecting to GATT server...');
 
-  return device.gatt.connect()
-    .then(server => {
-      log('GATT server connected, getting service...');
-      serverInstance = server ;
-      return server.getPrimaryService(0xAA80);
-    })
-    .then(service => {
-      log('Service found, getting characteristic...');
-
-      return service.getCharacteristic(0xAA81);
-    })
-    .then(characteristic => {
-      log('Characteristic found');
-      characteristicCache = characteristic;
-
-      return characteristicCache;
-    });
+  var config = {
+    service: 0xAA80,
+    characteristics: [0xAA81, 0xAA82, 0xAA83]
+  };
+  for (var i in config.characteristics) {
+    return getChracteristics(config.service, config.characteristics[i]);
+  }
+  
 // 	   .then(_ => {
 //         return serverInstance.getPrimaryService(0xAA64);
 // 		log('getting service...');
@@ -142,47 +133,73 @@ function connectDeviceAndCacheCharacteristic(device) {
 //       });
 }
 
+function getServiceInstance(service) {
+  return deviceCache.gatt.connect()
+    .then(server => {
+      log('GATT server connected, getting service...');
+      console.log(['GATT server connected, getting service...', server]);
+      serverInstance = server.getPrimaryService(service);
+      return serviceInstance;
+    });
+}
+
+function getChracteristics(service, characteristic) {
+  return (serverInstance ? Promise.resolve(serverInstance) : getServiceInstance(service))
+    .then(service => {
+      log('Service found, getting characteristic...');
+      console.log(['Service found, getting characteristic...', service]);
+
+      return service.getCharacteristic(characteristic);
+    })
+    .then(characteristic => {
+      log('Characteristic found');
+      console.log(['Characteristic found', characteristic]);
+      characteristicCache = characteristic;
+
+      return characteristicCache;
+    });
+}
+
 // Включение получения уведомлений об изменении характеристики
 function startNotifications(characteristic) {
   log('Starting notifications...');
+  console.log(['Starting notifications...', characteristic]);
 
   return characteristic.startNotifications().
       then(() => {
         log('Notifications started');
 
         // Добавленная строка
-        characteristic.addEventListener('characteristicvaluechanged',
-            handleCharacteristicValueChanged);		
+        characteristic.addEventListener('characteristicvaluechanged', handleCharacteristicValueChanged);		
       });
 }
 
 // Вывод в терминал
 function log(data, type = '') {
-  terminalContainer.insertAdjacentHTML('beforeend',
-      '<div' + (type ? ' class="' + type + '"' : '') + '>' + data + '</div>');
+  terminalContainer.insertAdjacentHTML('beforeend', '<div' + (type ? ' class="' + type + '"' : '') + '>' + data + '</div>');
 }
 
 // Отключиться от подключенного устройства
 function disconnect() {
   if (deviceCache) {
     log('Disconnecting from "' + deviceCache.name + '" bluetooth device...');
-    deviceCache.removeEventListener('gattserverdisconnected',
-        handleDisconnection);
+    console.log(['Disconnecting from "' + deviceCache.name + '" bluetooth device...', deviceCache]);
+    deviceCache.removeEventListener('gattserverdisconnected', handleDisconnection);
 
     if (deviceCache.gatt.connected) {
       deviceCache.gatt.disconnect();
       log('"' + deviceCache.name + '" bluetooth device disconnected');
+      console.log('"' + deviceCache.name + '" bluetooth device disconnected');
     }
     else {
-      log('"' + deviceCache.name +
-          '" bluetooth device is already disconnected');
+      log('"' + deviceCache.name + '" bluetooth device is already disconnected');
+      console.log('"' + deviceCache.name + '" bluetooth device is already disconnected');
     }
   }
 
   // Добавленное условие
   if (characteristicCache) {
-    characteristicCache.removeEventListener('characteristicvaluechanged',
-        handleCharacteristicValueChanged);
+    characteristicCache.removeEventListener('characteristicvaluechanged', handleCharacteristicValueChanged);
     characteristicCache = null;
   }
   
@@ -192,6 +209,7 @@ function disconnect() {
 // Получение данных
 function handleCharacteristicValueChanged(event) {
   log(event.target.value.getUint32(0)/100, 'in'); // (0, littleEndian)
+  console.log([event.target.value.getUint32(0)/100, 'in', event]);
 }
 
 // Отправить данные подключенному устройству
