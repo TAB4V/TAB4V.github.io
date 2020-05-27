@@ -118,7 +118,7 @@ function readCharacteristic(device, param) {
       return service.getCharacteristic(param);
     })
     .then(characteristic => {
-      return [characteristic.uuid, characteristic.readValue()];
+      return [characteristic.uuid, characteristic, characteristic.readValue()];
     });
 }
 
@@ -127,16 +127,23 @@ function showValues(device) {
   if (!charArray) {
     for (var i in chars) {
       readCharacteristic(device, chars[i])
-        .then((uuid, value) => {
-          charArray[uuid] = value;
-          console.log([uuid, value]);
+        .then((uuid, characteristic, value) => {
+          if (!charArray) {
+            charArray = {};
+          }
+          charArray[uuid] = {
+            characteristic: characteristic,
+            value: value.getUint8(0)
+          };
+          console.log([uuid, value.getUint8(0)]);
         });
     }
+  } else {
+    Promise.resolve(charArray)
+      .then(_ => {
+        console.log(charArray);
+      });
   }
-  Promise.resolve(charArray)
-    .then(_ => {
-      console.log(charArray);
-    });
 }
 
 // Подключение к определенному устройству, получение сервиса и характеристики
@@ -162,7 +169,6 @@ function connectDeviceAndCacheCharacteristic(device) {
     .then(characteristic => {
       log('Characteristic found');
       characteristicCache = characteristic;
-      console.log([characteristic.uuid, characteristic.readValue(), characteristic]);
 
       return characteristicCache;
     });
