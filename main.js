@@ -15,7 +15,7 @@ startButton.addEventListener('click', function() {
   var uuid = $('#startBtn').attr('data-uuid');
   var value = $('#startBtn').attr('data-value');
   var characteristic = charArray[uuid].characteristic;
-  var converted = new Uint8Array([value]);
+  var converted = new Uint16Array([value]);
   characteristic.writeValue(converted);
 });
 
@@ -25,7 +25,7 @@ stopButton.addEventListener('click', function() {
   var uuid = $('#stopBtn').attr('data-uuid');
   var value = $('#stopBtn').attr('data-value');
   var characteristic = charArray[uuid].characteristic;
-  var converted = new Uint8Array([value]);
+  var converted = new Uint16Array([value]);
   characteristic.writeValue(converted);
 });
 
@@ -131,7 +131,7 @@ function readCharacteristic(device, param) {
 }
 
 function showValues(device) {
-  var chars = [0xAA81, 0xAA82, 0xAA83];
+  var chars = [0xAA81, 0xAA82, 0xAA84];
   if (!charArray) {
     for (var i in chars) {
       readCharacteristic(device, chars[i])
@@ -140,7 +140,7 @@ function showValues(device) {
             charArray = {};
           }
           var uuid = characteristic.uuid;
-//          if(uuid == '0000aa82-0000-1000-8000-00805f9b34fb') Promise.resolve(characteristic.readValue()) 
+          //if(uuid == '0000aa84-0000-1000-8000-00805f9b34fb') Promise.resolve(characteristic.readValue()) 
 			Promise.resolve(0)
             .then(value => {
               var _val;
@@ -151,20 +151,20 @@ function showValues(device) {
                   _dat = 'uint32';
                   break;
                 case '0000aa82-0000-1000-8000-00805f9b34fb':
-                  _val = 0 ; // value.getInt16(0);
-                  _dat = 'int16';
-                  $('#input').attr('data-uuid', uuid);
-                  $('#input').val(_val);
-                  break;
-                case '0000aa83-0000-1000-8000-00805f9b34fb':
                   _val = 0 ; // value.getUint8(0);
                   $('#startBtn')
                     .attr('data-uuid', uuid)
-                    .attr('data-value', 3);
+                    .attr('data-value', 1);
                   $('#stopBtn')
                     .attr('data-uuid', uuid)
-                    .attr('data-value', 5);
-                  _dat = 'uint8';
+                    .attr('data-value', 0);
+                  _dat = 'uint16';
+                  break;
+                case '0000aa84-0000-1000-8000-00805f9b34fb':
+                  _val  = 0 ; // value.getInt16(0); ; // = 0 ; // = value.getInt16(0);
+                  _dat = 'int16';
+                  $('#input').attr('data-uuid', uuid);
+                  $('#input').val(_val);
                   break;
               }
               charArray[uuid] = {
