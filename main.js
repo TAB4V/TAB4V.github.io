@@ -81,7 +81,7 @@ function requestBluetoothDevice() {
 	  // acceptAllDevices: true,
     filters: [
 	   // {services: [0xAA81]}
-	   {namePrefix: 'TAB4V'}
+	   {namePrefix: 'AB4'}
 	  ],
 	  optionalServices: [0xAA80, 0xAA64]
   }).then(device => {
