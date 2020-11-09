@@ -269,7 +269,7 @@ function disconnect() {
 
 // Получение данных
 function handleCharacteristicValueChanged(event) {
-  log(event.target.value.getUint32(0)/100, 'in'); // (0, littleEndian)
+  log(event.target.value.getInt32(0)/100, 'in'); // (0, littleEndian)
 }
 
 function int16ToInt8Array(value) {
