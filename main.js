@@ -55,6 +55,7 @@ disconnectButton.addEventListener('click', function() {
 sendForm.addEventListener('submit', function(event) {
   event.preventDefault(); // Предотвратить отправку формы
   send();
+  log("send " + inputField.value, 'out');
   // send(inputField.value); // Отправить содержимое текстового поля
 //  inputField.value = '';  // Обнулить текстовое поле
   inputField.focus();     // Вернуть фокус на текстовое поле
@@ -63,6 +64,9 @@ sendForm.addEventListener('submit', function(event) {
 // Кэш объекта выбранного устройства
 let deviceCache = null;
 
+let coefficientValueCharacteristic = null;
+
+
 // Запустить выбор Bluetooth устройства и подключиться к выбранному
 function connect() {
   var _dev = (deviceCache ? Promise.resolve(deviceCache) : requestBluetoothDevice());
@@ -70,6 +74,10 @@ function connect() {
   return _dev
     .then(device => connectDeviceAndCacheCharacteristic(device))
     .then(characteristic => startNotifications(characteristic))
+	.then(_ => {
+    log('Readingcoefficient ...');
+    return coefficientValueCharacteristic.readValue();
+  })
     .catch(error => log(error));
 }
 
@@ -161,6 +169,9 @@ function showValues(device) {
                   _dat = 'uint16';
                   break;
                 case '0000aa84-0000-1000-8000-00805f9b34fb':
+				  coefficientValueCharacteristic = characteristic;
+				  coefficientValueCharacteristic.addEventListener('characteristicvaluechanged', handleCoefficientValueChanged);
+				  
                   _val  = 0 ; // value.getInt16(0); ; // = 0 ; // = value.getInt16(0);
                   _dat = 'int16';
                   $('#input').attr('data-uuid', uuid);
@@ -265,6 +276,13 @@ function disconnect() {
   charArray = null;
   serviceInstance = null;
   deviceCache = null;
+}
+
+
+// Получение коэффициента
+function handleCoefficientValueChanged(event) {
+  log("coefficient " + event.target.value.getInt16(0), 'in'); // (0, littleEndian)
+  inputField.value = event.target.value.getInt16(0) ;
 }
 
 // Получение данных
