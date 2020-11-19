@@ -5,15 +5,35 @@ let terminalContainer = document.getElementById('terminal');
 let sendForm = document.getElementById('send-form');
 let inputField = document.getElementById('input');
 let startButton = document.getElementById('startBtn');
+let fftStartButton = document.getElementById('fftStartBtn');
 let stopButton = document.getElementById('stopBtn');
 let clearButton = document.getElementById('clrBtn');
+let attCheckbox = document.getElementById('attenuator');
 
 
 // при нажатии на кнопку START
 startButton.addEventListener('click', function() {
   log('start');
   var uuid = $('#startBtn').attr('data-uuid');
-  var value = $('#startBtn').attr('data-value');
+  var value = 0x01 ; // $('#startBtn').attr('data-value');
+  if (!$('#attenuator').is(':checked')){
+    value |= 0x40 ;
+	log('ATT Выключен');
+  } 
+  var characteristic = charArray[uuid].characteristic;
+  var converted = new Uint16Array([value]);
+  characteristic.writeValue(converted);
+});
+
+// при нажатии на кнопку FFTSTART
+fftStartButton.addEventListener('click', function() {
+  log('fftstart');
+  var uuid = $('#startBtn').attr('data-uuid');
+  var value = 0x81 ; // $('#startBtn').attr('data-value');
+  if (!$('#attenuator').is(':checked')){
+    value |= 0x40 ;
+	log('ATT Выключен');
+  } 
   var characteristic = charArray[uuid].characteristic;
   var converted = new Uint16Array([value]);
   characteristic.writeValue(converted);
@@ -65,6 +85,7 @@ sendForm.addEventListener('submit', function(event) {
 let deviceCache = null;
 
 let coefficientValueCharacteristic = null;
+let fftCharacteristic = null;
 
 
 // Запустить выбор Bluetooth устройства и подключиться к выбранному
@@ -139,7 +160,7 @@ function readCharacteristic(device, param) {
 }
 
 function showValues(device) {
-  var chars = [0xAA81, 0xAA82, 0xAA84];
+  var chars = [0xAA81, 0xAA82, 0xAA84, 0xAA85];
   if (!charArray) {
     for (var i in chars) {
       readCharacteristic(device, chars[i])
@@ -176,6 +197,12 @@ function showValues(device) {
                   _dat = 'int16';
                   $('#input').attr('data-uuid', uuid);
                   $('#input').val(_val);
+                  break;
+                case '0000aa85-0000-1000-8000-00805f9b34fb':
+				  fftCharacteristic = characteristic;
+				  fftCharacteristic.addEventListener('characteristicvaluechanged', handleFftChanged);
+                  _val  = 0 ;
+                  _dat = 'int16';
                   break;
               }
               charArray[uuid] = {
@@ -241,6 +268,7 @@ function startNotifications(characteristic) {
 
         // Добавленная строка
         characteristic.addEventListener('characteristicvaluechanged', handleCharacteristicValueChanged);		
+        characteristic.addEventListener('characteristicvaluechanged', handleFftChanged);		
       });
 }
 
@@ -278,6 +306,13 @@ function disconnect() {
   deviceCache = null;
 }
 
+
+// Получение fft data
+function handleFftChanged(event) {
+  log("fft " + event.target.value.byteLength + event.target.value.buffer, 'in'); // (0, littleEndian)
+    const value = event.target.value;
+  log("Received " + value, 'in');
+}
 
 // Получение коэффициента
 function handleCoefficientValueChanged(event) {
