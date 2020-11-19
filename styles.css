@@ -15,3 +15,7 @@ input {
 #terminal div.in {
     color: blue;
 }
+
+div {
+  overflow: auto;
+}

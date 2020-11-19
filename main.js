@@ -201,6 +201,7 @@ function showValues(device) {
                 case '0000aa85-0000-1000-8000-00805f9b34fb':
 				  fftCharacteristic = characteristic;
 				  fftCharacteristic.addEventListener('characteristicvaluechanged', handleFftChanged);
+				  fftCharacteristic.startNotifications();
                   _val  = 0 ;
                   _dat = 'int16';
                   break;
@@ -267,8 +268,7 @@ function startNotifications(characteristic) {
         log('Notifications started');
 
         // Добавленная строка
-        characteristic.addEventListener('characteristicvaluechanged', handleCharacteristicValueChanged);		
-        characteristic.addEventListener('characteristicvaluechanged', handleFftChanged);		
+        characteristic.addEventListener('characteristicvaluechanged', handleCharacteristicValueChanged);	
       });
 }
 
@@ -309,9 +309,8 @@ function disconnect() {
 
 // Получение fft data
 function handleFftChanged(event) {
-  log("fft " + event.target.value.byteLength + event.target.value.buffer, 'in'); // (0, littleEndian)
-    const value = event.target.value;
-  log("Received " + value, 'in');
+//  log("fft " + event.target.value.getUint8(0) + Uint8Array(event.target.value.buffer), 'in'); // (0, littleEndian)
+  log("fft " + event.target.value.getUint8(0), 'in'); // (0, littleEndian)
 }
 
 // Получение коэффициента
