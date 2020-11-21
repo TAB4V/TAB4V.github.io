@@ -219,7 +219,7 @@ function showValues(device) {
                 case '0000aa85-0000-1000-8000-00805f9b34fb':
 				  fftCharacteristic = characteristic;
 				  fftCharacteristic.addEventListener('characteristicvaluechanged', handleFftChanged);
-				  fftCharacteristic.startNotifications();
+				  //fftCharacteristic.startNotifications(); // на андроиде не работает
                   _val  = 0 ;
                   _dat = 'int16';
                   break;
@@ -353,6 +353,7 @@ function handleFftChanged(event) {
 function handleCoefficientValueChanged(event) {
   log("coefficient " + event.target.value.getInt16(0), 'in'); // (0, littleEndian)
   inputField.value = event.target.value.getInt16(0) ;
+  fftCharacteristic.startNotifications();
 }
 
 // Получение данных
