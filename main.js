@@ -343,7 +343,7 @@ function handleFftChanged(event) {
     //log("fft " + block + ' ' + fftByteArray[0], 'in');
 	datau = [] ;
 	var freq ;
-	for (let i=1;i<75*9;i+=1) { freq = (i*2*3600/4095) ; datau.push([freq, fftByteArray[i]]); }
+	for (let i=1;i<75*9;i+=1) { freq = (i*2*3600/4095) ; datau.push([freq, fftByteArray[i]/4000]); }
 	console.log(datau);
 	ShowGrf();
   }
@@ -401,7 +401,7 @@ function ShowGrf() {
 				colors: ['green'],
 				axes: {
 					x: {valueFormatter: function(x){return this.getLabels()[0] + ': '+ x.toPrecision(5);}}},
-					labels: ['Hz', 'A'],
+					labels: ['Hz', 'a'],
 					labelsDiv: graphLab,
 					legend: "follow", //'always',  // "follow"
 					digitsAfterDecimal: 3,
