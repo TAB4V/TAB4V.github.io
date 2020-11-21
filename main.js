@@ -6,115 +6,18 @@ let sendForm = document.getElementById('send-form');
 let inputField = document.getElementById('input');
 let startButton = document.getElementById('startBtn');
 let fftStartButton = document.getElementById('fftStartBtn');
+let fftSaveButton = document.getElementById('fftSaveBtn');
 let stopButton = document.getElementById('stopBtn');
 let clearButton = document.getElementById('clrBtn');
 let attCheckbox = document.getElementById('attenuator');
-let fftCanvas = document.getElementById("fftCanvas");
-
-fftCanvas.width = 300;
-fftCanvas.height = 300;
-
-var ctx = fftCanvas.getContext("2d");
+let vibrospeedLabel = document.getElementById('vibrospeed');
+let graphDiv = document.getElementById('div_v');
+let graphLab = document.getElementById('labdiv');
 
 
-https://code.tutsplus.com/ru/tutorials/how-to-draw-bar-charts-using-javascript-and-html5-canvas--cms-28561
+var fftByteArray = new Uint16Array(4096);
 
-function drawLine(ctx, startX, startY, endX, endY,color){
-    ctx.save();
-    ctx.strokeStyle = color;
-    ctx.beginPath();
-    ctx.moveTo(startX,startY);
-    ctx.lineTo(endX,endY);
-    ctx.stroke();
-    ctx.restore();
-}
-
-function drawBar(ctx, upperLeftCornerX, upperLeftCornerY, width, height,color){
-    ctx.save();
-    ctx.fillStyle=color;
-    ctx.fillRect(upperLeftCornerX,upperLeftCornerY,width,height);
-    ctx.restore();
-}
-
-var myVinyls = {
-    "Classical music": 10,
-    "Alternative rock": 14,
-    "Pop": 2,
-    "Jazz": 12
-};
-
-var Barchart = function(options){
-    this.options = options;
-    this.canvas = options.canvas;
-    this.ctx = this.canvas.getContext("2d");
-    this.colors = options.colors;
-  
-    this.draw = function(){
-        var maxValue = 0;
-        for (var categ in this.options.data){
-            maxValue = Math.max(maxValue,this.options.data[categ]);
-        }
-        var canvasActualHeight = this.canvas.height - this.options.padding * 2;
-        var canvasActualWidth = this.canvas.width - this.options.padding * 2;
- 
-        //drawing the grid lines
-        var gridValue = 0;
-        while (gridValue <= maxValue){
-            var gridY = canvasActualHeight * (1 - gridValue/maxValue) + this.options.padding;
-            drawLine(
-                this.ctx,
-                0,
-                gridY,
-                this.canvas.width,
-                gridY,
-                this.options.gridColor
-            );
-             
-            //writing grid markers
-            this.ctx.save();
-            this.ctx.fillStyle = this.options.gridColor;
-            this.ctx.font = "bold 10px Arial";
-            this.ctx.fillText(gridValue, 10,gridY - 2);
-            this.ctx.restore();
- 
-            gridValue+=this.options.gridScale;
-        }
-  
-        //drawing the bars
-        var barIndex = 0;
-        var numberOfBars = Object.keys(this.options.data).length;
-        var barSize = (canvasActualWidth)/numberOfBars;
- 
-        for (categ in this.options.data){
-            var val = this.options.data[categ];
-            var barHeight = Math.round( canvasActualHeight * val/maxValue) ;
-            drawBar(
-                this.ctx,
-                this.options.padding + barIndex * barSize,
-                this.canvas.height - barHeight - this.options.padding,
-                barSize,
-                barHeight,
-                this.colors[barIndex%this.colors.length]
-            );
- 
-            barIndex++;
-        }
-  
-    }
-}
-
-var myBarchart = new Barchart(
-    {
-        canvas:fftCanvas,
-        padding:10,
-        gridScale:5,
-        gridColor:"#eeeeee",
-        data:myVinyls,
-        colors:["#a55ca5","#67b6c7", "#bccd7a","#eb9743"]
-    }
-);
-
-myBarchart.draw();
+var devicename = 'data' ;
 
 // при нажатии на кнопку START
 startButton.addEventListener('click', function() {
@@ -151,6 +54,7 @@ fftStartButton.addEventListener('click', function() {
   var converted = new Uint16Array([value]);
   characteristic.writeValue(converted);
 });
+
 
 // при нажатии на кнопку STOP
 stopButton.addEventListener('click', function() {
@@ -228,6 +132,7 @@ function requestBluetoothDevice() {
 	  optionalServices: [0xAA80, 0xAA64]
   }).then(device => {
       log('"' + device.name + '" bluetooth device selected');
+	  devicename = device.name ;
       deviceCache = device;
 
       // Добавленная строка
@@ -259,7 +164,7 @@ function getPrimaryService(device) {
     ? Promise.resolve(serviceInstance)
     : device.gatt.connect()
       .then(server => {
-        log('GATT server connected, getting service...');
+        //log('GATT server connected, getting service...');
         serviceInstance = server ;
         return server.getPrimaryService(0xAA80);
       });
@@ -387,8 +292,11 @@ function startNotifications(characteristic) {
 
 // Вывод в терминал
 function log(data, type = '') {
-  terminalContainer.insertAdjacentHTML('beforeend',
+  terminalContainer.insertAdjacentHTML('beforeEnd',
       '<div' + (type ? ' class="' + type + '"' : '') + '>' + data + '</div>');
+  //terminalContainer.scrollTop = terminalContainer.scrollHeight;
+  //console.log(terminalContainer.scrollTop);
+  //console.log(terminalContainer.scrollHeight);
 }
 
 // Отключиться от подключенного устройства
@@ -419,23 +327,26 @@ function disconnect() {
   deviceCache = null;
 }
 
-
 // Получение fft data
 function handleFftChanged(event) {
   var block = event.target.value.getUint8(0) ;
   fftByteArray[block*9+0] = event.target.value.getUint16(1+0, true) ;
-  fftByteArray[block*9+1] = event.target.value.getUint16(1+1, true) ;
-  fftByteArray[block*9+2] = event.target.value.getUint16(1+2, true) ;
-  fftByteArray[block*9+3] = event.target.value.getUint16(1+3, true) ;
-  fftByteArray[block*9+4] = event.target.value.getUint16(1+4, true) ;
-  fftByteArray[block*9+5] = event.target.value.getUint16(1+5, true) ;
-  fftByteArray[block*9+6] = event.target.value.getUint16(1+6, true) ;
-  fftByteArray[block*9+7] = event.target.value.getUint16(1+7, true) ;
-  fftByteArray[block*9+8] = event.target.value.getUint16(1+8, true) ;
+  fftByteArray[block*9+1] = event.target.value.getUint16(1+2, true) ;
+  fftByteArray[block*9+2] = event.target.value.getUint16(1+4, true) ;
+  fftByteArray[block*9+3] = event.target.value.getUint16(1+6, true) ;
+  fftByteArray[block*9+4] = event.target.value.getUint16(1+8, true) ;
+  fftByteArray[block*9+5] = event.target.value.getUint16(1+10, true) ;
+  fftByteArray[block*9+6] = event.target.value.getUint16(1+12, true) ;
+  fftByteArray[block*9+7] = event.target.value.getUint16(1+14, true) ;
+  fftByteArray[block*9+8] = event.target.value.getUint16(1+16, true) ;
   if(block == 75) {
-    log("fft " + block + ' ' + fftByteArray[0], 'in');
+    //log("fft " + block + ' ' + fftByteArray[0], 'in');
+	datau = [] ;
+	var freq ;
+	for (let i=1;i<75*9;i+=1) { freq = (i*2*3600/4095) ; datau.push([freq, fftByteArray[i]]); }
+	console.log(datau);
+	ShowGrf();
   }
-
 }
 
 // Получение коэффициента
@@ -447,6 +358,7 @@ function handleCoefficientValueChanged(event) {
 // Получение данных
 function handleCharacteristicValueChanged(event) {
   log(event.target.value.getInt32(0)/100, 'in'); // (0, littleEndian)
+  vibrospeedLabel.innerHTML =  event.target.value.getInt32(0)/100 ;
 }
 
 function int16ToInt8Array(value) {
@@ -470,16 +382,85 @@ function send() {
   var converted = int16ToInt8Array(value);
   characteristic.writeValue(converted);
 }
-/*
-function send(data) {
-  data = String(data);
 
-  if (!data || !characteristicCache) {
-	  log('err');
-    return;
-  }
+var stg = 0;
+var datau = [];
 
-  writeToCharacteristic(characteristicCache, data);
-  log(data, 'out');
+function ShowGrf() {
+	if(!stg) {
+		gu = new Dygraph(
+			graphDiv,
+		    datau, //fftByteArray,
+			{
+				title: 'спектр ускорений',
+				showRangeSelector: false, //true,
+				showRoller: false, //true,
+				xlabel: 'f(Hz)',
+				ylabel: 'амплитуда',
+				colors: ['green'],
+				axes: {
+					x: {valueFormatter: function(x){return this.getLabels()[0] + ': '+ x.toPrecision(5);}}},
+					labels: ['Hz', 'A'],
+					labelsDiv: graphLab,
+					legend: "follow", //'always',  // "follow"
+					digitsAfterDecimal: 3,
+			});
+//		setInterval(function(){renderChart()}, 50);
+		stg = 1;
+	} else {
+		gu.updateOptions({'file': datau});
+	}
 }
-*/
+
+var renderChart = function() {
+	var dl;
+	if (gu.dateWindow_) {
+		dl = gu.dateWindow_[1] - gu.dateWindow_[0];
+	    if ($("FixEnd").checked) {
+			var ls = datau.length - 1;
+			gu.dateWindow_[1] = datau[ls][0];
+			gu.dateWindow_[0] = datau[ls][0] - dl;
+		} else if (gu.dateWindow_[0] < datau[0][0]) {
+			gu.dateWindow_[0] = datau[0][0];
+			gu.dateWindow_[1] = datau[0][0] + dl;
+	   	}
+	} else dl = datau.length/smprate;
+	if(rend && datau.length != 0) gu.updateOptions({'file': datau});
+}
+
+function convertArrayOfObjectsToCSV(value){
+	var result, ctr, keys, columnDelimiter, lineDelimiter, data;
+
+	data = value.data || null;
+	if (data == null || !data.length) {return null;}
+	columnDelimiter = value.columnDelimiter || ';';
+	lineDelimiter = value.lineDelimiter || '\n';
+	keys = Object.keys(data[1]);
+	result = '';
+	result += keys.join(columnDelimiter);
+	result += lineDelimiter;
+	data.forEach(function(item){
+		ctr = 0;
+		keys.forEach(function(key){
+			if (ctr > 0)
+				result += columnDelimiter;
+			result += item[key].toFixed(3).replace(".",",");
+			ctr++;
+		});
+		result += lineDelimiter;
+	});
+	return result;
+}
+
+// при нажатии на кнопку FFTSAVE
+fftSaveButton.addEventListener('click', function() {
+  log('fftsave to csv');
+  var csv = convertArrayOfObjectsToCSV({data: datau});
+  if (!csv.match(/^data:text\/csv/i)) {csv = 'data:text/csv;charset=utf-8,' + csv;}
+  var encodedUri = encodeURI(csv);
+  var link = document.createElement('a');
+  link.setAttribute('href', encodedUri);
+  link.setAttribute('download',devicename.replace("#","")+".csv");
+  link.click();
+});
+
